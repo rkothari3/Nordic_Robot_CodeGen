@@ -1,5 +1,5 @@
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 
@@ -62,10 +62,11 @@ def initialize_gemini():
     if not API_KEY:
         st.error("API key not found. Please set GEMINI_API_KEY in your .env file.")
         st.stop()
-    return genai.Client(api_key=API_KEY)
+    genai.configure(api_key=API_KEY)
+    return genai.GenerativeModel('gemini-2.0-flash')
 
-# Initialize Gemini client
-client = initialize_gemini()
+# Initialize Gemini model
+model = initialize_gemini()
 
 # App title
 st.title("Nordic-Robot AI Code Generator")
@@ -88,14 +89,11 @@ def generate_response(prompt):
     try:
         # Show a spinner while waiting for the first token
         with st.spinner("Thinking..."):
-            response_stream = client.models.generate_content_stream(
-                model="gemini-2.0-flash", 
-                contents=prompt
-            )
+            response_stream = model.generate_content(prompt, stream=True)
         
         # Stream the response
         for chunk in response_stream:
-            if hasattr(chunk, 'text'):
+            if chunk.text:
                 full_response += chunk.text
                 response_container.markdown(full_response)
                 

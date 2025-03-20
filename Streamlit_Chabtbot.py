@@ -1,7 +1,5 @@
 import streamlit as st
 import google.generativeai as genai
-from dotenv import load_dotenv
-import os
 
 # Page configuration
 st.set_page_config(
@@ -54,13 +52,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Load environment variables and API key
+# Load API key from Streamlit secrets
 @st.cache_resource
 def initialize_gemini():
-    load_dotenv()
-    API_KEY = os.getenv("GEMINI_API_KEY")
+    API_KEY = st.secrets["GEMINI_API_KEY"]
     if not API_KEY:
-        st.error("API key not found. Please set GEMINI_API_KEY in your .env file.")
+        st.error("API key not found. Please set GEMINI_API_KEY in your Streamlit secrets.")
         st.stop()
     genai.configure(api_key=API_KEY)
     return genai.GenerativeModel('gemini-2.0-flash')
